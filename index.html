@@ -1,0 +1,986 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Papa Bear’s Little Lantern Cabin</title>
+<style>
+  :root{
+    --night:#091a34;
+    --deep:#10284b;
+    --blue:#23486f;
+    --paper:#fff3d0;
+    --ink:#352113;
+    --gold:#ffd36a;
+    --amber:#f6a93b;
+    --fire:#ff7a2f;
+    --rose:#ffb7a7;
+    --pine:#163f38;
+    --warmGlow:0 0 35px rgba(255,191,83,.75);
+    --softShadow:0 20px 70px rgba(0,0,0,.36);
+  }
+
+  *{box-sizing:border-box}
+  html,body{margin:0;min-height:100%;font-family:Georgia,"Times New Roman",serif;color:var(--paper);background:radial-gradient(circle at top,#1b4c78 0%,#0b1a34 46%,#061020 100%);overflow-x:hidden}
+  button,textarea,input{font-family:inherit}
+  body::before{
+    content:"";
+    position:fixed;inset:0;pointer-events:none;z-index:0;
+    background:
+      radial-gradient(circle at 20% 15%,rgba(255,221,145,.18),transparent 20%),
+      radial-gradient(circle at 80% 10%,rgba(146,202,255,.12),transparent 22%),
+      linear-gradient(rgba(255,255,255,.03) 1px,transparent 1px),
+      linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px);
+    background-size:auto,auto,42px 42px,42px 42px;
+    mix-blend-mode:screen;
+  }
+
+  #snow{position:fixed;inset:0;pointer-events:none;z-index:2;overflow:hidden}
+  .snowflake{position:absolute;top:-20px;color:rgba(255,255,255,.85);font-size:14px;animation:fall linear infinite;text-shadow:0 0 8px white}
+  @keyframes fall{
+    from{transform:translateY(-20px) translateX(0) rotate(0deg);opacity:0}
+    12%{opacity:1}
+    to{transform:translateY(105vh) translateX(50px) rotate(360deg);opacity:.15}
+  }
+
+  .app{position:relative;z-index:3;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:26px}
+  .storybook{
+    width:min(1120px,100%);
+    min-height:720px;
+    border:1px solid rgba(255,228,164,.45);
+    border-radius:34px;
+    overflow:hidden;
+    position:relative;
+    background:
+      radial-gradient(circle at 50% 18%,rgba(255,206,111,.16),transparent 24%),
+      linear-gradient(135deg,rgba(12,35,62,.93),rgba(6,16,32,.96));
+    box-shadow:var(--softShadow), inset 0 0 80px rgba(255,216,139,.08);
+  }
+
+  .topbar{
+    position:absolute;top:0;left:0;right:0;z-index:8;
+    display:flex;gap:10px;align-items:center;justify-content:space-between;
+    padding:12px 16px;background:linear-gradient(to bottom,rgba(3,10,21,.78),rgba(3,10,21,0));
+  }
+  .soundbar{display:flex;gap:8px;flex-wrap:wrap}
+  .soundbtn,.tinybtn{
+    border:1px solid rgba(255,228,164,.5);
+    background:rgba(255,255,255,.08);
+    color:#fff5d9;border-radius:999px;
+    padding:8px 12px;font-size:.86rem;cursor:pointer;
+    backdrop-filter:blur(6px);
+    transition:.25s transform,.25s background,.25s box-shadow;
+  }
+  .soundbtn:hover,.tinybtn:hover{transform:translateY(-2px);background:rgba(255,211,106,.2);box-shadow:0 0 18px rgba(255,211,106,.28)}
+  .tracker{display:flex;align-items:center;gap:8px;font-size:.86rem;color:#ffe7af}
+  .miniLantern{
+    width:16px;height:24px;border-radius:8px 8px 10px 10px;
+    background:radial-gradient(circle at center,#fff7bc 0%,#ffc85a 35%,#9b4d1d 76%);
+    box-shadow:0 0 calc(8px + var(--warm,0)*6px) rgba(255,196,75,.7);
+    position:relative;animation:flicker 1.8s infinite ease-in-out;
+  }
+  .miniLantern.off{filter:grayscale(.85);opacity:.45;box-shadow:none}
+  @keyframes flicker{0%,100%{opacity:.95;transform:scale(1)}45%{opacity:.75;transform:scale(.97)}60%{opacity:1;transform:scale(1.04)}}
+
+  .scene{
+    min-height:720px;
+    display:grid;
+    grid-template-columns:1.02fr .98fr;
+    gap:0;
+    opacity:0;
+    transform:translateY(18px) scale(.985);
+    animation:pageIn .7s ease forwards;
+  }
+  @keyframes pageIn{to{opacity:1;transform:translateY(0) scale(1)}}
+
+  .visual{
+    min-height:720px;
+    position:relative;
+    padding:78px 28px 26px;
+    overflow:hidden;
+    background:
+      radial-gradient(circle at 50% 52%,rgba(255,184,77,.24),transparent 25%),
+      linear-gradient(to bottom,#143b63 0%,#0b1d36 54%,#06101f 100%);
+  }
+  .textpanel{
+    min-height:720px;
+    padding:84px 32px 34px;
+    background:
+      linear-gradient(90deg,rgba(23,11,4,.42),rgba(72,35,12,.2)),
+      radial-gradient(circle at center,rgba(255,225,158,.13),transparent 58%);
+    border-left:1px solid rgba(255,228,164,.28);
+    display:flex;flex-direction:column;justify-content:center;
+  }
+
+  h1,h2{margin:0 0 16px;line-height:1.05;color:#ffe9ae;text-shadow:0 0 26px rgba(255,174,51,.42)}
+  h1{font-size:clamp(2.4rem,6vw,5.6rem);letter-spacing:.5px}
+  h2{font-size:clamp(1.8rem,3.5vw,3rem)}
+  .subtitle{font-size:1.1rem;color:#cfe8ff;letter-spacing:.08em;text-transform:uppercase;margin-bottom:14px}
+  p{font-size:clamp(1.08rem,1.7vw,1.34rem);line-height:1.65;margin:0 0 15px}
+  .small{font-size:.95rem;color:#ffe9bd;opacity:.85}
+  .quote{font-style:italic;color:#fff1c7;border-left:4px solid var(--gold);padding-left:14px;margin:16px 0}
+  .poem p{margin-bottom:10px}
+
+  .btnrow{display:flex;gap:12px;flex-wrap:wrap;margin-top:18px}
+  .mainbtn,.choice,.door,.objectBtn{
+    border:2px solid rgba(255,247,205,.82);cursor:pointer;color:#351f10;font-weight:900;
+    background:linear-gradient(180deg,#fff9b8 0%,#ffd35f 56%,#ef8a2e 100%);
+    border-radius:22px;padding:14px 18px;
+    box-shadow:0 8px 0 #884315,0 15px 24px rgba(0,0,0,.28),0 0 18px rgba(255,195,72,.32);
+    transition:.18s transform,.18s filter,.18s box-shadow;
+  }
+  .mainbtn:hover,.choice:hover,.door:hover,.objectBtn:hover{transform:translateY(-4px) scale(1.025) rotate(-.3deg);filter:saturate(1.18);box-shadow:0 12px 0 #884315,0 20px 30px rgba(0,0,0,.34),0 0 28px rgba(255,205,91,.55)}
+  .mainbtn:active,.choice:active,.door:active,.objectBtn:active{transform:translateY(2px);box-shadow:0 3px 0 #884315,0 10px 18px rgba(0,0,0,.28)}
+  .choice{
+    width:100%;text-align:left;margin:8px 0;background:linear-gradient(180deg,#fff0bb,#ffcf67 70%,#de8327);
+    font-size:1rem;color:#2e1707;
+  }
+  .choice.cool{background:linear-gradient(180deg,#e7f6ff,#a8d8ff 65%,#5c92c5);color:#06192c}
+  .choice.warm{background:linear-gradient(180deg,#fff2bd,#ffc060 67%,#e77b2a)}
+  .choice.kind{background:linear-gradient(180deg,#fbffd1,#c8ef7c 64%,#75b74a)}
+  .door{
+    min-height:128px;flex:1 1 190px;border:2px solid rgba(255,239,181,.65);
+    background:
+      radial-gradient(circle at 50% 12%,rgba(255,255,200,.8),transparent 16%),
+      linear-gradient(180deg,#8b461f,#4c2412);
+    color:#fff0bc;text-shadow:0 2px 4px rgba(0,0,0,.55);
+    position:relative;overflow:hidden;
+  }
+  .door::before{
+    content:"";position:absolute;inset:-30%;background:radial-gradient(circle,rgba(255,221,113,.35),transparent 45%);
+    animation:doorPulse 2.5s infinite;
+  }
+  .door span{position:relative;z-index:1;display:block;font-size:1.12rem}
+  @keyframes doorPulse{0%,100%{transform:scale(.8);opacity:.3}50%{transform:scale(1.15);opacity:.9}}
+
+  .feedback{
+    margin-top:16px;padding:18px;border-radius:22px;
+    background:rgba(255,246,211,.1);
+    border:1px solid rgba(255,230,166,.3);
+    box-shadow:inset 0 0 30px rgba(255,207,109,.08);
+  }
+  .feedback.warm{background:rgba(255,198,75,.16);box-shadow:0 0 28px rgba(255,192,77,.2)}
+  .feedback.cool{background:rgba(113,176,228,.15);box-shadow:0 0 28px rgba(113,176,228,.15)}
+  .feedback.kind{background:rgba(192,242,126,.15);box-shadow:0 0 28px rgba(192,242,126,.16)}
+
+
+
+  /* Kid-friendly, touchable controls inside the picture panel */
+  .roomTools{
+    position:absolute;left:18px;right:18px;bottom:14px;z-index:12;
+    display:flex;gap:8px;justify-content:center;align-items:center;flex-wrap:wrap;
+    padding:9px 10px;border-radius:24px;
+    background:linear-gradient(180deg,rgba(36,16,8,.72),rgba(73,35,13,.56));
+    border:1px solid rgba(255,225,154,.42);
+    box-shadow:0 10px 28px rgba(0,0,0,.25), inset 0 0 24px rgba(255,202,99,.09);
+    backdrop-filter:blur(6px);
+  }
+  .roomTools button{
+    border:2px solid rgba(255,245,198,.9);
+    border-radius:999px;padding:9px 12px;cursor:pointer;
+    color:#351906;font-weight:900;font-size:.88rem;
+    background:linear-gradient(180deg,#fff7bc,#ffcf62 62%,#ee8c33);
+    box-shadow:0 5px 0 #8b4317,0 0 16px rgba(255,214,96,.32);
+    transition:.18s transform,.18s filter,.18s box-shadow;
+  }
+  .roomTools button:hover{transform:translateY(-3px) rotate(-1deg);filter:saturate(1.2);box-shadow:0 8px 0 #8b4317,0 0 26px rgba(255,218,112,.55)}
+  .roomTools button:active{transform:translateY(2px);box-shadow:0 2px 0 #8b4317}
+  .visualNote{
+    position:absolute;top:82px;left:22px;right:22px;z-index:14;
+    padding:10px 14px;border-radius:18px;background:rgba(255,239,178,.94);color:#3a1d09;
+    border:2px solid rgba(255,196,74,.95);box-shadow:0 0 26px rgba(255,201,80,.45);
+    font-weight:800;text-align:center;opacity:0;transform:translateY(-8px);pointer-events:none;
+    transition:.35s opacity,.35s transform;
+  }
+  .visualNote.show{opacity:1;transform:translateY(0)}
+
+  .storybook.lightsOff .visual{filter:brightness(.72) saturate(.92)}
+  .storybook.lightsOff .lanternBig,.storybook.lightsOff .window{filter:brightness(1.45);box-shadow:0 0 70px rgba(255,206,81,1)}
+  .storybook.fireHigh .flame{height:88px;width:62px;filter:drop-shadow(0 0 30px #ffb34d)}
+  .storybook.fireHigh .fireplace{box-shadow:0 0 52px rgba(255,122,47,.65)}
+  .storybook.soupWarm .steam{border-left-width:5px;animation-duration:1.45s}
+  .storybook.soupWarm .soup{box-shadow:0 0 38px rgba(255,194,79,.95)}
+  .storybook.windowOpen .window{background:linear-gradient(135deg,#0b1b31,#7ec7ff 48%,#fff4bc);box-shadow:0 0 26px rgba(146,209,255,.7)}
+  .storybook.windowOpen .interior::after{
+    content:'❄';position:absolute;right:92px;top:80px;font-size:28px;color:#e9fbff;
+    text-shadow:0 0 12px white;animation:floatSnowIn 2.4s infinite ease-in-out;z-index:6;
+  }
+  @keyframes floatSnowIn{0%{transform:translate(0,0) rotate(0);opacity:.2}50%{opacity:1}100%{transform:translate(-34px,42px) rotate(130deg);opacity:0}}
+
+  .visualLabel{
+    position:absolute;left:24px;top:82px;z-index:10;
+    padding:8px 13px;border-radius:999px;background:rgba(255,241,193,.18);
+    border:1px solid rgba(255,238,181,.42);color:#fff1c7;font-weight:800;
+    box-shadow:0 0 16px rgba(255,208,91,.18)
+  }
+
+  /* Visual world */
+  .moon{position:absolute;right:58px;top:94px;width:82px;height:82px;border-radius:50%;background:#fff6cb;box-shadow:0 0 60px #fff2a8}
+  .pine{position:absolute;bottom:0;width:0;height:0;border-left:48px solid transparent;border-right:48px solid transparent;border-bottom:148px solid #123f37;filter:drop-shadow(0 0 9px rgba(13,47,42,.9))}
+  .pine::after{content:"";position:absolute;left:-35px;top:54px;width:70px;height:80px;background:#0d302b;clip-path:polygon(50% 0,0 100%,100% 100%)}
+  .p1{left:12px}.p2{left:98px;transform:scale(.8)}.p3{right:42px;transform:scale(1.1)}.p4{right:152px;transform:scale(.75)}
+
+  .cabin{
+    position:absolute;left:50%;bottom:68px;transform:translateX(-50%);
+    width:360px;height:245px;border-radius:16px 16px 10px 10px;
+    background:
+      repeating-linear-gradient(0deg,rgba(255,222,155,.10) 0 3px,rgba(35,13,5,.18) 3px 9px),
+      repeating-linear-gradient(90deg,rgba(255,236,176,.08) 0 2px,transparent 2px 38px),
+      linear-gradient(90deg,#5b331d,#7d4827 52%,#4b2817);
+    box-shadow:0 22px 38px rgba(0,0,0,.45), inset 0 0 40px rgba(255,209,124,.07);
+    border:2px solid rgba(255,218,145,.22);
+  }
+  .cabin::before{
+    content:"";position:absolute;left:-24px;right:-24px;top:-80px;height:110px;
+    background:
+      repeating-linear-gradient(90deg,rgba(255,235,180,.08) 0 5px,transparent 5px 28px),
+      linear-gradient(135deg,#3a2116,#1d0e09);
+    clip-path:polygon(50% 0,100% 76%,92% 100%,50% 34%,8% 100%,0 76%);
+    filter:drop-shadow(0 10px 20px rgba(0,0,0,.5));
+  }
+  .window{position:absolute;top:58px;width:68px;height:78px;border-radius:14px;background:radial-gradient(circle,#fff3a7 0%,#ffbd48 45%,#7b3518 100%);box-shadow:0 0 45px rgba(255,188,72,.9);animation:windowGlow 2.4s infinite}
+  .w1{left:62px}.w2{right:62px}
+  @keyframes windowGlow{0%,100%{filter:brightness(1)}50%{filter:brightness(1.3)}}
+  .cabinDoor{position:absolute;bottom:0;left:138px;width:84px;height:128px;border-radius:42px 42px 8px 8px;background:#2d160c;border:2px solid #b87934;box-shadow:inset 0 0 25px rgba(255,186,75,.22)}
+  .snowGround{position:absolute;left:-5%;right:-5%;bottom:-8px;height:96px;background:linear-gradient(#e8f7ff,#b8d9ee);border-radius:50% 50% 0 0;box-shadow:0 -8px 24px rgba(255,255,255,.22)}
+  .lanternBig{
+    position:absolute;width:56px;height:82px;border-radius:22px 22px 26px 26px;
+    background:radial-gradient(circle at center,#fffbc6 0%,#ffc85b 35%,#a54a18 76%);
+    border:2px solid rgba(255,236,165,.65);box-shadow:0 0 42px rgba(255,192,71,.9);
+    animation:flicker 1.65s infinite ease-in-out;
+  }
+  .lanternBig::before{content:"";position:absolute;top:-16px;left:17px;width:20px;height:18px;border:3px solid #d69436;border-bottom:0;border-radius:16px 16px 0 0}
+  .lA{left:72px;top:54px}.lB{right:72px;top:54px}
+
+  .bearScene{position:absolute;left:50%;bottom:105px;transform:translateX(-50%);display:flex;gap:24px;align-items:flex-end}
+  .bear{position:relative;width:116px;height:150px;border-radius:60px 60px 42px 42px;background:linear-gradient(145deg,#8c5b34,#573018);box-shadow:0 12px 24px rgba(0,0,0,.24);animation:breathe 3.2s infinite ease-in-out}
+  .bear.papa{width:150px;height:205px}
+  .bear.cub{width:92px;height:124px;background:linear-gradient(145deg,#b37a46,#744321)}
+  .bear::before,.bear::after{content:"";position:absolute;top:-18px;width:38px;height:38px;border-radius:50%;background:inherit}
+  .bear::before{left:14px}.bear::after{right:14px}
+  .face{position:absolute;left:50%;top:38px;transform:translateX(-50%);width:62px;height:50px;border-radius:50%;background:#c99056}
+  .cub .face{top:28px;width:50px;height:40px}
+  .eye{position:absolute;top:13px;width:8px;height:8px;border-radius:50%;background:#271207;box-shadow:0 0 5px rgba(255,241,180,.75)}
+  .eye.e1{left:16px}.eye.e2{right:16px}
+  .nose{position:absolute;left:50%;top:27px;transform:translateX(-50%);width:14px;height:10px;border-radius:50%;background:#241106}
+
+  .ribbon{position:absolute;top:-17px;left:50%;transform:translateX(-50%) rotate(-5deg);width:56px;height:28px;z-index:5;filter:drop-shadow(0 3px 4px rgba(0,0,0,.35))}
+  .ribbon::before,.ribbon::after{content:"";position:absolute;top:5px;width:25px;height:20px;border-radius:12px 12px 10px 10px;background:var(--rib);border:2px solid rgba(255,255,255,.72)}
+  .ribbon::before{left:0;transform:rotate(24deg)}.ribbon::after{right:0;transform:rotate(-24deg)}
+  .ribbon span{position:absolute;left:21px;top:7px;width:14px;height:14px;border-radius:50%;background:var(--rib);border:2px solid rgba(255,255,255,.75);z-index:2}
+  .ribbon.red{--rib:#db2e2e;background:radial-gradient(circle,#fff 0 2px,transparent 3px);background-size:9px 9px}
+  .ribbon.blue{--rib:#2476d8;background:radial-gradient(circle,#fff 0 2px,transparent 3px);background-size:9px 9px}
+  .ribbon.red::before,.ribbon.red::after{background:radial-gradient(circle,#fff 0 2px,transparent 3px),#db2e2e;background-size:9px 9px}
+  .ribbon.blue::before,.ribbon.blue::after{background:radial-gradient(circle,#fff 0 2px,transparent 3px),#2476d8;background-size:9px 9px}
+  .cub.redCub{background:linear-gradient(145deg,#bd814b,#764321)}
+  .cub.blueCub{background:linear-gradient(145deg,#a66d40,#65381d)}
+
+  @keyframes breathe{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-3px) scale(1.01)}}
+
+  .interior{
+    position:absolute;inset:88px 44px 44px;border-radius:28px;
+    background:
+      radial-gradient(circle at 22% 74%,rgba(255,146,51,.35),transparent 25%),
+      linear-gradient(180deg,#57331d,#21110b);
+    border:1px solid rgba(255,221,148,.28);
+    box-shadow:inset 0 0 70px rgba(255,189,76,.15);
+  }
+  .fireplace{
+    position:absolute;left:42px;bottom:42px;width:154px;height:124px;border-radius:18px 18px 6px 6px;
+    background:#30140c;border:8px solid #6d3c22;box-shadow:0 0 32px rgba(255,104,30,.35);
+  }
+  .flame{position:absolute;left:50%;bottom:14px;transform:translateX(-50%);width:52px;height:72px;background:radial-gradient(circle at 50% 72%,#fff6a4 0%,#ff9b2d 38%,#d43b17 72%,transparent 74%);border-radius:50% 50% 45% 45%;animation:flame 1.1s infinite ease-in-out;filter:drop-shadow(0 0 15px #ff772f)}
+  @keyframes flame{0%,100%{transform:translateX(-50%) scale(1) rotate(-2deg)}50%{transform:translateX(-50%) scale(1.14,.9) rotate(3deg)}}
+  .table{position:absolute;right:42px;bottom:72px;width:230px;height:92px;
+    background:repeating-linear-gradient(90deg,rgba(255,232,170,.12) 0 5px,transparent 5px 30px),linear-gradient(180deg,#9b6135,#6f3b1f);
+    border-radius:50% 50% 12px 12px;box-shadow:0 12px 18px rgba(0,0,0,.35);z-index:4;border:2px solid rgba(255,221,151,.18)}
+  .soup{position:absolute;left:75px;top:-24px;width:92px;height:48px;border-radius:50%;background:radial-gradient(circle,#ffdf92,#c2692d 68%,#7d3315);border:5px solid #f3d597;box-shadow:0 0 18px rgba(255,187,79,.55);z-index:7}
+  .steam{position:absolute;left:36px;top:-74px;width:16px;height:58px;border-radius:50%;border-left:3px solid rgba(255,255,255,.65);animation:steam 2.6s infinite ease-in-out}
+  .steam.s2{left:58px;animation-delay:.5s}.steam.s3{left:80px;animation-delay:1s}
+  @keyframes steam{0%{transform:translateY(18px) scale(.7);opacity:0}35%{opacity:.85}100%{transform:translateY(-20px) scale(1.25);opacity:0}}
+  .cup{position:absolute;top:22px;width:28px;height:34px;border-radius:0 0 10px 10px;box-shadow:0 0 12px rgba(255,255,255,.3)}
+  .cup.green{left:24px;background:#80c96b}.cup.blue{right:28px;background:#6bb7df}
+  .stars{position:absolute;top:22px;left:260px;right:20px;height:90px;pointer-events:none}
+  .star{position:absolute;color:#fff1a8;text-shadow:0 0 12px #ffdc6e;animation:twinkle 1.8s infinite ease-in-out}
+  .star:nth-child(2){left:70px;top:35px;animation-delay:.5s}.star:nth-child(3){left:145px;top:10px;animation-delay:1s}.star:nth-child(4){left:220px;top:42px;animation-delay:1.4s}
+  @keyframes twinkle{0%,100%{opacity:.45;transform:scale(.9)}50%{opacity:1;transform:scale(1.2)}}
+
+  .objects{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:15px 0}
+  .objectBtn{background:linear-gradient(180deg,#e7f8ff,#9ed5ff 64%,#4685b9);color:#08213a;text-align:center;padding:12px}
+  .objectBtn.done{background:linear-gradient(180deg,#fff5b8,#ffc35e 65%,#c7741e)}
+
+  .drawingBox{
+    background:rgba(255,255,255,.12);border:1px dashed rgba(255,237,177,.65);border-radius:18px;padding:14px;margin-top:12px;
+  }
+  textarea{
+    width:100%;min-height:100px;border-radius:18px;border:1px solid rgba(255,229,166,.55);
+    background:rgba(255,250,226,.94);color:#3b2414;padding:14px;font-size:1rem;resize:vertical;
+    box-shadow:inset 0 0 20px rgba(255,210,106,.22);
+  }
+  .lanternMessage{
+    margin-top:18px;min-height:160px;border-radius:38px 38px 48px 48px;
+    background:radial-gradient(circle at center,#fff7c2 0%,#ffd05f 42%,#b85a1c 78%);
+    color:#351b08;padding:28px;border:3px solid #ffe6a5;text-align:center;font-weight:700;
+    box-shadow:0 0 55px rgba(255,198,76,.9);
+    animation:floatLantern 3.6s infinite ease-in-out;
+    display:none;white-space:pre-wrap;
+  }
+  @keyframes floatLantern{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+
+  .finalGlow .storybook{animation:finalCabinGlow 2.8s infinite ease-in-out}
+  @keyframes finalCabinGlow{0%,100%{box-shadow:var(--softShadow),0 0 40px rgba(255,180,68,.35)}50%{box-shadow:var(--softShadow),0 0 95px rgba(255,211,101,.8)}}
+
+  .hidden{display:none!important}
+
+  @media(max-width:860px){
+    .app{padding:10px}
+    .storybook{border-radius:22px;min-height:100vh}
+    .scene{grid-template-columns:1fr;min-height:unset}
+    .visual{min-height:420px;padding-top:76px}
+    .textpanel{min-height:unset;padding:28px 18px 36px;border-left:0;border-top:1px solid rgba(255,228,164,.24)}
+    .topbar{position:relative;background:rgba(3,10,21,.55);flex-direction:column;align-items:flex-start}
+    .cabin{transform:translateX(-50%) scale(.72);bottom:28px}
+    .bearScene{transform:translateX(-50%) scale(.72);bottom:62px}
+    .interior{inset:42px 16px 18px}
+    .fireplace{left:22px;bottom:32px;transform:scale(.78);transform-origin:left bottom}
+    .table{right:20px;bottom:48px;transform:scale(.8);transform-origin:right bottom}
+    .stars{left:150px}
+    .objects{grid-template-columns:1fr}
+    .roomTools{left:10px;right:10px;bottom:8px;gap:6px;padding:7px;justify-content:center}
+    .roomTools button{font-size:.78rem;padding:8px 9px}
+  }
+</style>
+</head>
+<body>
+<div id="snow"></div>
+<div class="app" id="app">
+  <main class="storybook" id="book">
+    <div class="topbar">
+      <div class="soundbar">
+        <button class="soundbtn" onclick="placeholderAudio('Read to Me')">🔊 Read to Me</button>
+        <button class="soundbtn" onclick="placeholderAudio('Soft Music')">🎵 Soft Music</button>
+        <button class="soundbtn" onclick="placeholderAudio('Lantern Sound')">🏮 Lantern Sound</button>
+        <button class="soundbtn" onclick="placeholderAudio('Fireplace Sound')">🔥 Fireplace Sound</button>
+      </div>
+      <div class="tracker" aria-label="Lantern warmth tracker">
+        <span>Lantern Glow</span>
+        <span class="miniLantern" id="track1"></span>
+        <span class="miniLantern off" id="track2"></span>
+        <span class="miniLantern off" id="track3"></span>
+        <button class="tinybtn" onclick="showScene('doors')">Lantern Doors</button>
+      </div>
+    </div>
+    <section id="stage"></section>
+  </main>
+</div>
+
+<script>
+const stage = document.getElementById('stage');
+let warmth = Number(localStorage.getItem('papaBearWarmth') || 1);
+let chosenPaths = JSON.parse(localStorage.getItem('papaBearPaths') || '[]');
+
+const scenes = {
+  start: {
+    title:'Papa Bear’s Little Lantern Cabin',
+    subtitle:'A lantern-lit winter story',
+    visual:'cabin',
+    body:`
+      <div class="poem">
+      <p>Once, beyond the snowy pines and the blue hills of Lantern Hollow, there lived a gentle bear called Papa Bear.</p>
+      <p>His cabin was not large.</p>
+      <p>It did not have long hallways.</p>
+      <p>It did not have shining staircases.</p>
+      <p>But every time his cubs were coming, Papa Bear made the little cabin ready.</p>
+      <p>He swept the floor. He warmed the soup. He folded the blankets.</p>
+      <p>And in the window, he lit two lanterns.</p>
+      <p>One for Clover. One for Pip.</p>
+      </div>
+      <p class="quote">Come in, little ones. You are already loved here.</p>
+      <div class="btnrow"><button class="mainbtn" onclick="showScene('door')">Begin the Story</button></div>
+    `
+  },
+  door:{
+    title:'The Little Cabin Door',
+    subtitle:'Snow at the threshold',
+    visual:'arrival',
+    body:`
+      <p>When Clover and Pip came to the little cabin, Papa Bear opened the door before they even knocked.</p>
+      <p>“I heard your paws in the snow,” he said with a smile.</p>
+      <p>The cabin smelled like soup, pinewood, and warm bread.</p>
+      <p>Pip looked around. The table was small. The rug was small. The sleeping corner was small.</p>
+      <p>Pip frowned. “This cabin is little,” she said.</p>
+      <p>Papa Bear’s smile stayed soft.</p>
+      <p>“Yes, little cub,” he said. “But I warmed every corner I could find.”</p>
+      <h3>What should Pip say next?</h3>
+      <button class="choice cool" onclick="choiceResponse('cool', 'Pip says, “I don’t like it here.” The fire crackles softly. Papa Bear looks at the soup pot for one quiet second. Then he says, “You must be hungry from the walk.” He places her favorite cup on the table. Sharp words can make a warm room feel colder, but Papa Bear still kept the soup warm.', 'before')">“I don’t like it here.”</button>
+      <button class="choice warm" onclick="choiceResponse('warm', 'Pip says, “I miss having more room.” Papa Bear nods. “That is an honest feeling,” he says. “We can hold honest feelings gently.” He moves a cushion closer to the fire. Honest words are easier to hold than sharp ones.', 'before')">“I miss having more room.”</button>
+      <button class="choice kind" onclick="choiceResponse('kind', 'Pip says, “Can we make this corner cozy?” Papa Bear’s eyes brighten. “I was hoping you might ask.” He brings out a folded blanket with tiny stitched stars. Sometimes one kind question makes a little room begin to grow.', 'before')">“Can we make this corner cozy?”</button>
+      <div id="response"></div>
+    `
+  },
+  before:{
+    title:'Before the Cubs Came',
+    subtitle:'The love no one saw yet',
+    visual:'inside',
+    body:`
+      <p>Before Clover and Pip came through the snow, Papa Bear had been busy all morning.</p>
+      <p>He tasted the soup. “Too much pepper for Pip,” he murmured. He added more noodles. “Clover likes noodles when the day is cold.”</p>
+      <p>He checked the boots by the fire. He shook out the blankets. He looked at the two little cups.</p>
+      <p>Then he looked at the door.</p>
+      <p>The cabin was very quiet.</p>
+      <p>So Papa Bear lit the two lanterns in the window.</p>
+      <p>Not because anyone was lost. But because someone was welcome.</p>
+      <h3>Click the objects to find Papa Bear’s quiet remembering.</h3>
+      <div class="objects">
+        <button class="objectBtn" onclick="objectReveal(this,'Papa Bear remembered that Pip liked her carrots cut small. “Big carrots are too bossy,” she had said once. He remembered.')">🍲 Soup Pot</button>
+        <button class="objectBtn" onclick="objectReveal(this,'Papa Bear remembered that Clover’s paws got cold last time, so he warmed the boots before she arrived.')">🥾 Boots</button>
+        <button class="objectBtn" onclick="objectReveal(this,'Papa Bear chose the softest blanket because Pip once said the wool blanket scratched her chin.')">🧺 Blankets</button>
+        <button class="objectBtn" onclick="objectReveal(this,'Papa Bear kept the little blue cup and the little green cup on the highest shelf so they would not break.')">☕ Two Cups</button>
+        <button class="objectBtn" onclick="objectReveal(this,'Papa Bear lit one lantern for each cub, even before they arrived.')">🏮 Lanterns</button>
+      </div>
+      <div id="objectText" class="feedback warm"><p>Some kinds of love happen before anyone is there to see them.</p></div>
+      <div class="btnrow"><button class="mainbtn" onclick="showScene('doors')">Open a Lantern Door</button></div>
+    `
+  },
+  doors:{
+    title:'The Lantern Doors',
+    subtitle:'Choose tonight. Return tomorrow.',
+    visual:'inside',
+    body:`
+      <p>Tonight, you may choose two lantern doors. Tomorrow, you can return and open another.</p>
+      <p>Each door keeps a different little piece of Papa Bear’s love.</p>
+      <div class="btnrow">
+        <button class="door" onclick="openPath('soup')"><span>🍲 The Soup Door</span></button>
+        <button class="door" onclick="openPath('forest')"><span>🌲 The Forest Door</span></button>
+        <button class="door" onclick="openPath('star')"><span>⭐ The Star Door</span></button>
+      </div>
+      <p class="small">Opened so far: ${chosenPaths.length ? chosenPaths.join(', ') : 'none yet'}.</p>
+    `
+  },
+  soup:{
+    title:'The Soup That Remembered',
+    subtitle:'Tiny moons and ribbon noodles',
+    visual:'inside',
+    body:`
+      <p>Papa Bear carried the soup carefully.</p>
+      <p>Pip looked into her bowl. The carrots were cut into tiny moons. The noodles curled like little ribbons.</p>
+      <p>Clover looked into her bowl. Extra noodles. Just the way she liked them.</p>
+      <p>Pip blinked. “How did you know?”</p>
+      <p>Papa Bear chuckled. “You told me once.”</p>
+      <p>“I did?”</p>
+      <p>“Yes,” said Papa Bear. “On a rainy day. You said big carrots were too bossy.”</p>
+      <p>Pip stared at the bowl. She had forgotten saying it. Papa Bear had not.</p>
+      <h3>What should Pip do?</h3>
+      <button class="choice warm" onclick="choiceResponse('warm','Pip eats quietly. Papa Bear does not ask for praise. But Clover notices that his shoulders relax when Pip takes another spoonful. Even quiet noticing can begin inside the heart.','cups')">Eat without saying anything.</button>
+      <button class="choice kind" onclick="choiceResponse('kind','Pip whispers, “You remembered?” Papa Bear smiles. “I try to keep important things in my heart.” The lantern on the table glows brighter. A remembered thing can feel like a hug.','cups')">Say, “You remembered?”</button>
+      <button class="choice kind" onclick="choiceResponse('kind','Pip says, “Can I help stir next time?” Papa Bear’s big paws pause. Then he hands her the wooden spoon. “Next time can begin now,” he says. The soup steam curls into a little heart, then disappears.','cups')">Say, “Can I help stir next time?”</button>
+      <div id="response"></div>
+    `
+  },
+  cups:{
+    title:'The Cup on the Shelf',
+    subtitle:'The cabin remembers',
+    visual:'inside',
+    body:`
+      <p>After supper, Clover noticed something high on the shelf.</p>
+      <p>Two little cups. One blue. One green.</p>
+      <p>“Papa,” Clover asked, “why do you keep those cups up there?”</p>
+      <p>Papa Bear looked almost shy.</p>
+      <p>“So they will be safe for when you come.”</p>
+      <p>Pip looked at her green cup. “You keep them even when we are not here?”</p>
+      <p>Papa Bear nodded. “The cabin remembers you with me.”</p>
+      <div class="objects">
+        <button class="objectBtn" onclick="objectReveal(this,'Papa Bear washed the green cup twice because he wanted it to shine.')">💚 Green Cup</button>
+        <button class="objectBtn" onclick="objectReveal(this,'Papa Bear kept the blue cup safe after Clover once said it felt like holding a piece of sky.')">💙 Blue Cup</button>
+      </div>
+      <div id="objectText" class="feedback warm"><p>Click a cup to discover its memory.</p></div>
+      <h3>What could Clover say?</h3>
+      <button class="choice cool" onclick="choiceResponse('cool','“It’s just a cup,” Clover says. Papa Bear nods gently, but the room becomes quieter. The cup still shines on the shelf.','interlude')">“It’s just a cup.”</button>
+      <button class="choice kind" onclick="choiceResponse('kind','“You saved it for us?” Clover asks. The lantern glows brighter. Papa Bear gives a small smile, the kind that starts in the eyes.','interlude')">“You saved it for us?”</button>
+      <button class="choice kind" onclick="showDraw()">“Can we draw a picture to put beside them?”</button>
+      <div id="response"></div>
+      <div id="drawBox" class="drawingBox hidden">
+        <p>Draw with words: What picture should the cubs put beside the cups?</p>
+        <textarea id="shelfPicture" placeholder="A tiny drawing of..."></textarea>
+        <button class="mainbtn" onclick="choiceResponse('kind','The cubs made a pretend picture for the shelf. Papa Bear placed it beside the cups as carefully as if it were a museum treasure.','interlude')">Place Picture on the Shelf</button>
+      </div>
+    `
+  },
+  forest:{
+    title:'The Trail Papa Planned',
+    subtitle:'Where the trees keep secrets',
+    visual:'forest',
+    body:`
+      <p>The next morning, Pip pressed her nose to the window.</p>
+      <p>“It is boring here,” she said.</p>
+      <p>Papa Bear tied his scarf.</p>
+      <p>“Then we must go where the trees keep secrets.”</p>
+      <p>Outside, the snow glittered.</p>
+      <p>Clover noticed Papa Bear’s backpack. Inside were apples, warm mittens, a tiny map, and two honey cakes wrapped in cloth.</p>
+      <p>“Did you pack all that today?” Clover asked.</p>
+      <p>Papa Bear smiled. “Last night.”</p>
+      <div class="objects">
+        <button class="objectBtn" onclick="objectReveal(this,'Papa Bear packed extra mittens because Pip always loses one.')">🧤 Mittens</button>
+        <button class="objectBtn" onclick="objectReveal(this,'Papa Bear drew the path himself so the cubs could feel like explorers.')">🗺️ Map</button>
+        <button class="objectBtn" onclick="objectReveal(this,'Papa Bear saved the last honey to make two small honey cakes.')">🍯 Honey Cakes</button>
+        <button class="objectBtn" onclick="objectReveal(this,'Papa Bear cut the apples small because Clover’s tooth was loose last winter.')">🍎 Apples</button>
+      </div>
+      <div id="objectText" class="feedback warm"><p>Open the backpack memories.</p></div>
+      <h3>What should the cubs say?</h3>
+      <button class="choice warm" onclick="choiceResponse('warm','“How far is it?” asks Pip. Papa Bear answers kindly, “Not too far for tired paws.”','pond')">“How far is it?”</button>
+      <button class="choice kind" onclick="choiceResponse('kind','“You planned this for us?” Clover asks. Papa Bear smiles. “I thought the cabin might feel bigger if we carried our love outside.”','pond')">“You planned this for us?”</button>
+      <button class="choice kind" onclick="choiceResponse('kind','“Can we choose the first turn?” Pip asks. Papa Bear bows playfully. “Lead the way, brave cubs.”','pond')">“Can we choose the first turn?”</button>
+      <div id="response"></div>
+    `
+  },
+  pond:{
+    title:'The Pond of Ducks',
+    subtitle:'A remembered spring thing',
+    visual:'forest',
+    body:`
+      <p>At the end of the path, the forest opened to a frozen pond.</p>
+      <p>Near the reeds, ducks waddled in a sleepy line.</p>
+      <p>Pip gasped. “Ducks!”</p>
+      <p>Papa Bear laughed. “You told me you liked them.”</p>
+      <p>“When?”</p>
+      <p>“In spring,” said Papa Bear. “You saw one with a green head and said it looked like a king.”</p>
+      <p>Pip stared at the ducks. She had forgotten. Papa Bear had not.</p>
+      <h3>What should Pip do now?</h3>
+      <button class="choice warm" onclick="choiceResponse('warm','Pip runs ahead. Papa Bear watches carefully to make sure she does not slip. Even when Pip forgot to look back, Papa Bear was still watching over her.','interlude')">Run ahead without looking back.</button>
+      <button class="choice kind" onclick="choiceResponse('kind','Pip looks at Papa Bear and smiles. The pond shines gold. A smile can tell someone, “I see what you did.”','interlude')">Look at Papa Bear and smile.</button>
+      <button class="choice kind" onclick="choiceResponse('kind','Pip asks Papa Bear to tell the duck story again. Papa Bear tells it with a silly duck voice. Clover laughs so hard she falls into the snow.','interlude')">Ask Papa Bear to tell the duck story again.</button>
+      <div id="response"></div>
+    `
+  },
+  star:{
+    title:'The Paper Star Corner',
+    subtitle:'The stars Papa Bear could reach',
+    visual:'inside',
+    body:`
+      <p>That night, when the fire was low, Clover looked up.</p>
+      <p>Above the sleeping corner were paper stars.</p>
+      <p>Some were silver. Some were gold. Some were crooked.</p>
+      <p>One looked more like a potato than a star.</p>
+      <p>“Papa? Did you make those?”</p>
+      <p>Papa Bear rubbed the back of his neck. “I tried.”</p>
+      <p>Pip squinted. “They are not real stars.”</p>
+      <p>Papa Bear nodded. “No. I could not bring the real ones inside. So I made the kind I could reach.”</p>
+      <div class="objects">
+        <button class="objectBtn" onclick="objectReveal(this,'Papa Bear cut the gold star three times because the first two tore.')">⭐ Gold Star</button>
+        <button class="objectBtn" onclick="objectReveal(this,'Papa Bear made the silver star after Clover said she liked the night sky.')">🌟 Silver Star</button>
+        <button class="objectBtn" onclick="objectReveal(this,'Papa Bear almost threw the crooked star away, but then he thought it looked cheerful.')">✨ Crooked Star</button>
+      </div>
+      <div id="objectText" class="feedback warm"><p>Touch a star to hear its little history.</p></div>
+      <h3>What should Clover say?</h3>
+      <button class="choice cool" onclick="choiceResponse('cool','“They are not real,” Clover says. Papa Bear smiles gently. “No, little cub. But they are real paper. And real trying.”','night')">“They are not real.”</button>
+      <button class="choice kind" onclick="choiceResponse('kind','“You remembered I liked stars?” Clover asks. The Listening Lantern glows. Papa Bear says, “I remember more than you think.”','night')">“You remembered I liked stars?”</button>
+      <button class="choice kind" onclick="choiceResponse('kind','“Can we make more together?” Clover asks. Papa Bear brings out paper, scissors, and string. The ceiling slowly fills with more stars.','night')">“Can we make more together?”</button>
+      <div id="response"></div>
+    `
+  },
+  night:{
+    title:'The Night Thought',
+    subtitle:'Only the lantern heard',
+    visual:'inside',
+    body:`
+      <p>When the cubs fell asleep, Papa Bear did not sleep right away.</p>
+      <p>He tucked the blanket around Clover’s paws.</p>
+      <p>He moved Pip’s cup away from the edge of the table.</p>
+      <p>He placed one more log on the fire.</p>
+      <p>Then he sat quietly.</p>
+      <p>The cabin was small.</p>
+      <p>But with the cubs inside it, Papa Bear felt as if the whole sky had come home.</p>
+      <p>He whispered, so softly only the lantern heard:</p>
+      <p class="quote">“I hope they know. I hope they know how much.”</p>
+      <div class="btnrow"><button class="mainbtn" onclick="showScene('interlude')">Continue</button></div>
+    `
+  },
+  interlude:{
+    title:'The Cubs Alone',
+    subtitle:'Whispers under paper stars',
+    visual:'inside',
+    body:`
+      <p>Later, when Papa Bear was washing the bowls, Clover and Pip whispered under the paper stars.</p>
+      <p>“I still wish the cabin were bigger,” Pip said.</p>
+      <p>Clover nodded. “Me too.”</p>
+      <p>Pip pulled the blanket to her chin.</p>
+      <p>“But he remembered the ducks.”</p>
+      <p>“And the soup,” said Clover.</p>
+      <p>“And the stars.”</p>
+      <p>“And the cups.”</p>
+      <p>Pip was quiet for a while.</p>
+      <p>“Do you think Papa thinks about us when we are not here?”</p>
+      <p>Clover looked at the two lanterns in the window.</p>
+      <p>“I think,” she whispered, “that is why the lanterns are already lit.”</p>
+      <h3>What should Pip whisper back?</h3>
+      <button class="choice warm" onclick="choiceResponse('warm','“Maybe,” Pip whispers. It is a small word, but it opens a little window inside her heart.','finalDoors')">“Maybe.”</button>
+      <button class="choice kind" onclick="choiceResponse('kind','“I did not know he did all that,” Pip whispers. The lanterns seem to listen.','finalDoors')">“I did not know he did all that.”</button>
+      <button class="choice kind" onclick="choiceResponse('kind','“Tomorrow, maybe we can do something for him,” Pip whispers. Clover smiles in the dark.','finalDoors')">“Tomorrow, maybe we can do something for him.”</button>
+      <div id="response"></div>
+    `
+  },
+  finalDoors:{
+    title:'The Four Little Doors',
+    subtitle:'How will love be answered?',
+    visual:'inside',
+    body:`
+      <p>By the end of the night, the cabin had not become bigger.</p>
+      <p>The table was still small. The rug was still small. The sleeping corner was still small.</p>
+      <p>But Clover and Pip had begun to see things they had not seen before.</p>
+      <p>The soup that remembered. The boots by the fire. The cups on the shelf. The stars Papa Bear could reach. The ducks he had remembered.</p>
+      <p>Then, in the golden light, four little doors appeared.</p>
+      <p class="quote">“When love has been waiting quietly, how will you answer it?”</p>
+      <div class="btnrow">
+        <button class="door" onclick="ending('quiet')"><span>🤎 The Quiet Door<br><small>Sit close to Papa Bear</small></span></button>
+        <button class="door" onclick="ending('thanks')"><span>🏮 The Thank-You Door<br><small>Tell what you noticed</small></span></button>
+        <button class="door" onclick="ending('help')"><span>🥞 The Helping Door<br><small>Do something kind</small></span></button>
+        <button class="door" onclick="ending('soft')"><span>🌙 The Soft Words Door<br><small>Use softer words</small></span></button>
+      </div>
+    `
+  }
+};
+
+const endings = {
+  quiet:{
+    title:'The Quiet Door',
+    text:`Pip did not know what to say. Clover did not know either.
+
+So they did not say anything at first.
+
+They padded across the rug and sat beside Papa Bear.
+
+Papa Bear looked down. “Are you warm enough, little cubs?”
+
+Pip nodded. Clover leaned against his arm. Pip leaned against the other.
+
+Papa Bear became very still, as if he did not want to move too quickly and break the moment.
+
+The fire crackled. The lanterns glowed.
+
+The cabin was still little.
+
+But now it felt full.
+
+Sometimes love does not need a big speech. Sometimes sitting close is the first thank-you.`
+  },
+  thanks:{
+    title:'The Thank-You Door',
+    text:`Pip looked at the soup pot.
+
+“You remembered the carrots.”
+
+Clover pointed to the boots.
+
+“And you dried our boots.”
+
+Pip looked up. “You made the stars.”
+
+Clover touched the little blue cup.
+
+“And you kept our cups safe.”
+
+Papa Bear’s big paws rested on the table.
+
+For a moment, he did not speak.
+
+Then he said softly, “I tried.”
+
+Pip stepped closer. “I didn’t see it before.”
+
+Clover whispered, “We see it now.”
+
+Papa Bear’s eyes shone like lantern glass.
+
+He opened his arms.
+
+The cubs ran into them.
+
+A thank-you becomes powerful when it names the love it noticed.`
+  },
+  help:{
+    title:'The Helping Door',
+    text:`The next morning, Papa Bear woke to a strange sound.
+
+Clink. Tap. Whisper.
+
+He opened one eye.
+
+Clover was folding napkins.
+
+Pip was placing cups on the table.
+
+The honey jar was upside down, and one spoon was stuck to the floor.
+
+Papa Bear sat up. “What is happening here?”
+
+Pip stood proudly. “We are making breakfast.”
+
+Clover added, “Not perfect breakfast.”
+
+Pip held up a pancake shaped like a boot.
+
+“Special breakfast.”
+
+Papa Bear laughed.
+
+It was the kind of laugh that warmed the windows.
+
+The pancakes were lumpy. The table was sticky. The tea was too weak.
+
+But Papa Bear ate as if it were a feast in a palace.
+
+Love grows when everyone gets to give something.`
+  },
+  soft:{
+    title:'The Soft Words Door',
+    text:`Pip looked down at her paws.
+
+“Papa Bear?”
+
+“Yes, little cub?”
+
+“I said your cabin was too small.”
+
+Papa Bear smiled gently. “It is small.”
+
+Pip shook her head.
+
+“But I said it with little teeth.”
+
+The fire crackled.
+
+“I think I was missing other things,” Pip said. “But I made it sound like your cabin was the problem.”
+
+Papa Bear knelt beside her.
+
+“Big feelings sometimes come out with little teeth.”
+
+Pip’s ears lowered.
+
+“I can try softer words.”
+
+Papa Bear opened his arms.
+
+“That is a very brave try.”
+
+Clover joined the hug.
+
+The lanterns in the window glowed brighter than they had all winter.
+
+A soft word can turn a little room warm again.`
+  }
+};
+
+function updateTracker(){
+  warmth = Math.max(0, Math.min(3, warmth));
+  localStorage.setItem('papaBearWarmth', warmth);
+  for(let i=1;i<=3;i++){
+    const el=document.getElementById('track'+i);
+    if(!el) continue;
+    el.classList.toggle('off', i>warmth);
+    el.style.setProperty('--warm', warmth);
+  }
+}
+
+function makeVisual(type){
+  if(type==='cabin'){
+    return `<div class="moon"></div><div class="pine p1"></div><div class="pine p2"></div><div class="pine p3"></div><div class="pine p4"></div><div class="snowGround"></div>
+      <div class="cabin"><div class="window w1"></div><div class="window w2"></div><div class="cabinDoor"></div><div class="lanternBig lA"></div><div class="lanternBig lB"></div></div>${roomTools()}<div class="visualNote" id="visualNote"></div>`;
+  }
+  if(type==='arrival'){
+    return `<div class="moon"></div><div class="pine p1"></div><div class="pine p3"></div><div class="snowGround"></div>
+      <div class="cabin"><div class="window w1"></div><div class="window w2"></div><div class="cabinDoor"></div></div>
+      <div class="bearScene">
+        ${bear('cub redCub redRibbon')} ${bear('papa')} ${bear('cub blueCub blueRibbon')}
+      </div>${roomTools()}<div class="visualNote" id="visualNote"></div>`;
+  }
+  if(type==='forest'){
+    return `<div class="moon"></div><div class="pine p1"></div><div class="pine p2"></div><div class="pine p3"></div><div class="pine p4"></div><div class="snowGround"></div>
+      <div style="position:absolute;left:15%;right:15%;bottom:125px;height:80px;border-radius:50%;background:linear-gradient(#dff8ff,#91cbe8);box-shadow:0 0 35px rgba(210,245,255,.5) inset,0 0 18px rgba(255,255,255,.22)"></div>
+      <div style="position:absolute;right:100px;bottom:160px;font-size:42px;filter:drop-shadow(0 0 8px #fff);animation:breathe 2s infinite">🦆 🦆 🦆</div>
+      <div class="bearScene">${bear('papa')} ${bear('cub redCub redRibbon')} ${bear('cub blueCub blueRibbon')}</div>${roomTools()}<div class="visualNote" id="visualNote"></div>`;
+  }
+  return `<div class="interior">
+    <div class="stars"><span class="star">✦</span><span class="star">✧</span><span class="star">✦</span><span class="star">✧</span></div>
+    <div class="fireplace"><div class="flame"></div></div>
+    <div class="table"><div class="soup"><div class="steam"></div><div class="steam s2"></div><div class="steam s3"></div></div><div class="cup green"></div><div class="cup blue"></div></div>
+    <div class="bearScene" style="bottom:34px;left:35%;transform:translateX(-50%) scale(.74);z-index:3;pointer-events:none">${bear('papa')} ${bear('cub redCub redRibbon')} ${bear('cub blueCub blueRibbon')}</div>
+    ${roomTools()}
+    <div class="visualNote" id="visualNote"></div>
+  </div>`;
+}
+
+function roomTools(){
+  return `<div class="roomTools" aria-label="Cabin play controls">
+    <button onclick="toggleRoom('lights')" title="Make the cabin darker or brighter">💡 Lights</button>
+    <button onclick="toggleRoom('lantern')" title="Turn on the lantern glow">🏮 Lantern</button>
+    <button onclick="toggleRoom('soup')" title="Warm the soup">🍲 Soup</button>
+    <button onclick="toggleRoom('fire')" title="Feed the fireplace">🔥 Fire</button>
+    <button onclick="toggleRoom('window')" title="Open or close the window">🪟 Window</button>
+  </div>`;
+}
+
+function toggleRoom(action){
+  const book = document.getElementById('book');
+  if(action==='lights'){
+    book.classList.toggle('lightsOff');
+    visualNote(book.classList.contains('lightsOff') ? 'The room grows darker. The lanterns feel brighter now.' : 'The room becomes warm and bright again.');
+  }
+  if(action==='lantern'){
+    warmth = 3; updateTracker();
+    book.classList.remove('lightsOff');
+    visualNote('The lanterns glow for Clover and Pip.');
+  }
+  if(action==='soup'){
+    book.classList.toggle('soupWarm');
+    warmth = Math.max(warmth,2); updateTracker();
+    visualNote(book.classList.contains('soupWarm') ? 'The soup warms up. Steam curls like tiny clouds.' : 'The soup rests quietly on the table.');
+  }
+  if(action==='fire'){
+    book.classList.toggle('fireHigh');
+    warmth = Math.max(warmth,2); updateTracker();
+    visualNote(book.classList.contains('fireHigh') ? 'The fire grows higher and the cabin feels snug.' : 'The fire settles into a soft bedtime glow.');
+  }
+  if(action==='window'){
+    book.classList.toggle('windowOpen');
+    visualNote(book.classList.contains('windowOpen') ? 'The window opens. A tiny snowflake drifts inside.' : 'The window closes. The warm cabin holds its glow.');
+  }
+}
+
+function visualNote(text){
+  const note=document.getElementById('visualNote');
+  if(!note) return;
+  note.textContent=text;
+  note.classList.add('show');
+  clearTimeout(window.__visualNoteTimer);
+  window.__visualNoteTimer=setTimeout(()=>note.classList.remove('show'),2600);
+}
+
+function bear(kind){
+  const ribbon = kind.includes('redRibbon') ? '<div class="ribbon red"><span></span></div>' : (kind.includes('blueRibbon') ? '<div class="ribbon blue"><span></span></div>' : '');
+  return `<div class="bear ${kind}">${ribbon}<div class="face"><span class="eye e1"></span><span class="eye e2"></span><span class="nose"></span></div></div>`;
+}
+
+function showScene(id){
+  document.body.classList.remove('finalGlow');
+  const s = scenes[id];
+  stage.innerHTML = `<div class="scene"><div class="visual">${makeVisual(s.visual)}</div><div class="textpanel"><div class="subtitle">${s.subtitle||''}</div><h1>${s.title}</h1>${s.body}</div></div>`;
+  updateTracker();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function choiceResponse(type, text, next){
+  const box = document.getElementById('response');
+  if(type==='cool') warmth = Math.max(1, warmth-1);
+  if(type==='warm') warmth = Math.max(warmth,2);
+  if(type==='kind') warmth = 3;
+  updateTracker();
+  box.innerHTML = `<div class="feedback ${type}"><p>${text}</p><div class="btnrow"><button class="mainbtn" onclick="showScene('${next}')">Continue</button></div></div>`;
+}
+
+function objectReveal(btn,text){
+  btn.classList.add('done');
+  const box=document.getElementById('objectText');
+  if(box) box.innerHTML = `<p>${text}</p>`;
+  warmth = Math.max(warmth,2);
+  updateTracker();
+}
+
+function openPath(path){
+  if(!chosenPaths.includes(path)){
+    chosenPaths.push(path);
+    localStorage.setItem('papaBearPaths', JSON.stringify(chosenPaths));
+  }
+  showScene(path);
+}
+
+function showDraw(){
+  document.getElementById('drawBox').classList.remove('hidden');
+  const box = document.getElementById('response');
+  box.innerHTML = `<div class="feedback kind"><p>Papa Bear brings paper to the table. The shelf is waiting for a little cub-made picture.</p></div>`;
+  warmth=3; updateTracker();
+}
+
+function ending(kind){
+  warmth=3; updateTracker();
+  document.body.classList.add('finalGlow');
+  const e=endings[kind];
+  stage.innerHTML = `<div class="scene"><div class="visual">${makeVisual('inside')}</div><div class="textpanel">
+    <div class="subtitle">An ending you can keep, or choose again tomorrow</div>
+    <h1>${e.title}</h1>
+    ${e.text.split('\n').filter(Boolean).map(t=>`<p>${t}</p>`).join('')}
+    <div class="btnrow">
+      <button class="mainbtn" onclick="showScene('message')">Keep this ending</button>
+      <button class="mainbtn" onclick="showScene('finalDoors')">Choose another door now</button>
+      <button class="mainbtn" onclick="showScene('doors')">Choose another door tomorrow</button>
+    </div>
+  </div></div>`;
+}
+
+scenes.message = {
+  title:'Leave a Lantern Message',
+  subtitle:'Write your own little glow',
+  visual:'inside',
+  body:`
+    <p>If you were one of Papa Bear’s cubs, what would you say?</p>
+    <textarea id="lanternText" placeholder="Papa Bear, I noticed that you…
+
+One kind thing I could say next time is…
+
+One thing we could do together is…"></textarea>
+    <div class="btnrow"><button class="mainbtn" onclick="lightLantern()">Light My Lantern</button><button class="mainbtn" onclick="showScene('finalDoors')">Choose another ending</button></div>
+    <div id="myLantern" class="lanternMessage"></div>
+    <p class="quote">And so the little cabin kept glowing. Not because it was big. Not because it was perfect. But because love had been seen. And once love is seen, it shines differently forever.</p>
+  `
+};
+
+function lightLantern(){
+  const val = document.getElementById('lanternText').value.trim() || 'Papa Bear, I noticed your love in the little things.';
+  const lantern=document.getElementById('myLantern');
+  lantern.textContent = val;
+  lantern.style.display='block';
+  warmth=3; updateTracker();
+  document.body.classList.add('finalGlow');
+}
+
+function placeholderAudio(name){
+  const old=document.getElementById('audioNote');
+  if(old) old.remove();
+  const note=document.createElement('div');
+  note.id='audioNote';
+  note.style.position='fixed';
+  note.style.left='50%';
+  note.style.top='76px';
+  note.style.transform='translateX(-50%)';
+  note.style.zIndex='99';
+  note.style.padding='12px 18px';
+  note.style.borderRadius='999px';
+  note.style.background='rgba(255,230,160,.95)';
+  note.style.color='#2b1607';
+  note.style.boxShadow='0 0 28px rgba(255,207,85,.6)';
+  note.textContent = name + ' button is ready. Add your audio file later.';
+  document.body.appendChild(note);
+  setTimeout(()=>note.remove(),2300);
+}
+
+function createSnow(){
+  const snow=document.getElementById('snow');
+  const count=70;
+  for(let i=0;i<count;i++){
+    const flake=document.createElement('div');
+    flake.className='snowflake';
+    flake.textContent = Math.random()>.7 ? '✦' : '❄';
+    flake.style.left=Math.random()*100+'vw';
+    flake.style.animationDuration=(6+Math.random()*12)+'s';
+    flake.style.animationDelay=(-Math.random()*12)+'s';
+    flake.style.fontSize=(8+Math.random()*14)+'px';
+    flake.style.opacity=.35+Math.random()*.6;
+    snow.appendChild(flake);
+  }
+}
+
+createSnow();
+showScene('start');
+</script>
+</body>
+</html>
